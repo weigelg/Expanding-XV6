@@ -89,6 +89,8 @@ print_mode.c
 p5-test.c
 p5-test.h
 testsetuid.c
+testuidgid.c
 testSched.c
 cputime.c
 wait.c
+uproc.h
