@@ -1,99 +1,118 @@
+// Example for testing part of CS333 P2. 
+// This is by NO MEANS a complete test.
 #ifdef CS333_P2
 #include "types.h"
 #include "user.h"
 
-int
+static void
+uidTest(uint nval)
+{
+  uint uid = getuid();
+  printf(1, "Current UID is: %d\n", uid);
+  printf(1, "Setting UID to %d\n", nval);
+  if (setuid(nval) < 0)
+    printf(2, "Error. Invalid UID: %d\n", nval);
+  uid = getuid();
+  printf(1, "Current UID is: %d\n", uid);
+  sleep(5 * TPS);  // now type control-p
+}
+
+static void
+gidTest(uint nval)
+{
+  uint gid = getgid();
+  printf(1, "Current GID is: %d\n", gid);
+  printf(1, "Setting GID to %d\n", nval);
+  if (setgid(nval) < 0)
+    printf(2, "Error. Invalid GID: %d\n", nval);
+  setgid(nval);
+  gid = getgid();
+  printf(1, "Current GID is: %d\n", gid);
+  sleep(5 * TPS);  // now type control-p
+}
+
+static void
+forkTest(uint nval)
+{
+  uint uid, gid;
+  int pid;
+
+  printf(1, "Setting UID to %d and GID to %d before fork(). Value"
+                  " should be inherited\n", nval, nval);
+
+  if (setuid(nval) < 0)
+    printf(2, "Error. Invalid UID: %d\n", nval);
+  if (setgid(nval) < 0)
+    printf(2, "Error. Invalid UID: %d\n", nval);
+
+  printf(1, "Before fork(), UID = %d, GID = %d\n", getuid(), getgid());
+  pid = fork();
+  if (pid == 0) {  // child
+    uid = getuid();
+    gid = getgid();
+    printf(1, "Child: UID is: %d, GID is: %d\n", uid, gid);
+    sleep(5 * TPS);  // now type control-p
+    exit();
+  }
+  else
+    sleep(10 * TPS); // wait for child to exit before proceeding
+
+}
+
+static void
+invalidTest(uint nval)
+{
+  printf(1, "Setting UID to %d. This test should FAIL\n", nval);
+  if (setuid(nval) < 0)
+    printf(1, "SUCCESS! The setuid sytem call indicated failure\n");
+  else
+    printf(2, "FAILURE! The setuid system call indicates success\n");
+
+  printf(1, "Setting GID to %d. This test should FAIL\n", nval);
+  if (setgid(nval) < 0)
+    printf(1, "SUCCESS! The setgid sytem call indicated failure\n");
+  else
+    printf(2, "FAILURE! The setgid system call indicates success\n");
+
+  printf(1, "Setting UID to %d. This test should FAIL\n", -1);
+  if (setgid(-1) < 0)
+    printf(1, "SUCCESS! The setgid sytem call indicated failure\n");
+  else
+    printf(2, "FAILURE! The setgid system call indicates success\n");
+}
+
+static int
 testuidgid(void)
 {
-  uint uid, gid, ppid;
-  uid = getuid();
-  printf(2, "Current UID is: %d\n", uid);
+  uint nval, ppid;
 
-  printf(2, "Setting UID to 100\n");
-  if (setuid(100) < 0){
-    printf(2, "Error setting UID\n");
-    return -1;
-  }
-  if((uid = getuid()) != 100){
-    printf(2, "Error: UID was not preserved\n");
-    return -1;
-  }
-  printf(2, "Current UID is: %d\n", uid);
-  printf(2, "Attempting to set UID to -1\n");
-  if(setuid(-1) == 0){
-    printf(2, "UID was set to negative number\n");
-    return -1;
-  }
-  printf(2, "Failed to set UID to -1\n");
-  if((uid = getuid()) != 100){
-    printf(2, "Error: UID was not preserved\n");
-    return -1;
-  }
-  printf(2, "UID is %d\n", uid);
-  printf(2, "Attempting to set UID to 32768\n");
-  if (setuid(32768) == 0){
-    printf(2, "UID was set to number outside the maximum value\n");
-    return -1;
-  }
-  if ((uid = getuid()) != 100){
-    printf(2, "Error: UID was not preserved\n");
-    return -1;
-  }
-  printf(2, "Failed to set UID to 32768\n");
-  printf(2, "UID is %d\n", uid);
-  printf(2, "Failed to set UID to 32768\n");
-  
-  gid = getgid();
-  printf(2, "Current GID is: %d\n", gid);
+  // get/set uid test
+  nval = 100;
+  uidTest(nval);
 
-  printf(2, "Setting GID to 100\n");
-  if (setgid(100) < 0){
-    printf(2, "Error setting GID\n");
-    return -1;
-  }
-  if((gid = getgid()) != 100){
-    printf(2, "Error: GID was not preserved\n");
-    return -1;
-  }
-  printf(2, "Current GID is: %d\n", gid);
-  printf(2, "Attempting to set GID to -1\n");
-  if(setgid(-1) == 0){
-    printf(2, "GID was set to negative number\n");
-    return -1;
-  }
-  printf(2, "Failed to set GID to -1\n");
-  if((gid = getgid()) != 100){
-    printf(2, "Error: GID was not preserved\n");
-    return -1;
-  }
-  printf(2, "GID is %d\n", gid);
-  printf(2, "Attempting to set GID to 32768\n");
-  if (setgid(32768) == 0){
-    printf(2, "GID was set to number outside the maximum value\n");
-    return -1;
-  }
-  if ((gid = getgid()) != 100){
-    printf(2, "Error: GID was not preserved\n");
-    return -1;
-  }
-  printf(2, "Failed to set GID to 32768\n");
-  printf(2, "GID is %d\n", gid);
-  printf(2, "Failed to set GID to 32768\n");
-  
+  // get/set gid test
+  nval = 200;
+  gidTest(nval);
+
+  // getppid test
   ppid = getppid();
-  printf(2, "My parent process is: %d\n", ppid);
-  printf(2, "Done!\n");
+  printf(1, "My parent process is: %d\n", ppid);
+
+  // fork tests to demonstrate UID/GID inheritance 
+  nval = 111;
+  forkTest(nval);
+
+  // tests for invalid values for uid and gid
+  nval = 32800;   // 32767 is max value
+  invalidTest(nval);
+
+  printf(1, "Done!\n");
   return 0;
 }
 
 int
-main (int argc, char * argv[])
-{
-  if (!testuidgid())
-    printf(1, "All tests passed\n");
-  else
-    printf(1, "Test failed!\n");
+main() {
+  testuidgid();
   exit();
 }
-
 #endif
