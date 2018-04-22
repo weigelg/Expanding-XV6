@@ -14,7 +14,7 @@ main(int argc, char *argv[])
     printf(1, " seconds\n");
     exit();
   }
-  pipe(fd); //TODO: check error
+  pipe(fd);
   if ((pid = fork()) == 0){
       if(exec(argv[1], &argv[1]) < 0){
         close(fd[0]);
@@ -28,7 +28,7 @@ main(int argc, char *argv[])
   kill(pid);
   end_time = uptime();
   close(fd[1]);
-  read(fd[0], &n, sizeof(int));  // check for errors
+  read(fd[0], &n, sizeof(int));
   if (n < 0){
     close(fd[0]);
     printf(1, " ran in ");

@@ -152,6 +152,7 @@ sys_setgid(void)
   proc->gid = arg;
   return 0;
 }
+
 int
 sys_getprocs(void)
 {

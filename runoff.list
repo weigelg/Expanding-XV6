@@ -90,7 +90,10 @@ p5-test.c
 p5-test.h
 testsetuid.c
 testuidgid.c
+p2testsuite.c
+ps-test.c
 testSched.c
 cputime.c
 wait.c
 uproc.h
+
